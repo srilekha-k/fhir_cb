@@ -146,22 +146,6 @@ export default function Home() {
               <div style={{ whiteSpace: "pre-wrap" }}>{answer}</div>
             </div>
           )}
-
-          {!!sources.length && (
-            <div style={{ marginTop: 12 }}>
-              <h4>Sources</h4>
-              <ul style={{ paddingLeft: 18, marginTop: 6 }}>
-                {sources.map((s) => (
-                  <li key={s.marker} style={{ marginBottom: 6 }}>
-                    <strong>{s.marker}</strong>{" "}
-                    <span style={{ color: "#374151" }}>{s.fileName}</span>{" "}
-                    <em style={{ color: "#6b7280" }}>score: {s.score.toFixed(3)}</em>
-                    <div style={{ color: "#4b5563", marginTop: 2 }}>{s.preview}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </section>
       </main>
     </>
