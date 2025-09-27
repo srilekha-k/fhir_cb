@@ -1,0 +1,36 @@
+{
+  "name": "server-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.11.0",
+    "mongoose": "^8.7.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "openai": "^5.22.1",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^2.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "tsx": "^4.15.7",
+    "typescript": "^5.6.2"
+  }
+}
