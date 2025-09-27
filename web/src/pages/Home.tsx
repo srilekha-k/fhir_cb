@@ -16,7 +16,22 @@ export default function Home() {
   const [answer, setAnswer] = React.useState("");
   const [sources, setSources] = React.useState<SourceItem[]>([]);
 
-  const API = (import.meta as any).env?.VITE_API_URL || "http://localhost:3000";
+  // Prefer VITE_API_BASE (what we set on Vercel), but also accept VITE_API_URL.
+  const API_BASE = React.useMemo(() => {
+    const raw =
+      (import.meta as any).env?.VITE_API_BASE ??
+      (import.meta as any).env?.VITE_API_URL ??
+      ""; // don't default to localhost in production
+    return String(raw).trim().replace(/\/$/, "");
+  }, []);
+
+  function requireApi() {
+    if (!API_BASE) {
+      throw new Error(
+        "API base URL missing. Set VITE_API_BASE (or VITE_API_URL) on Vercel to your Render API URL."
+      );
+    }
+  }
 
   async function upload() {
     if (!file) return;
@@ -25,11 +40,16 @@ export default function Home() {
     setAnswer("");
     setSources([]);
     try {
+      requireApi();
+      if (file.size > 15 * 1024 * 1024) {
+        throw new Error("File too large (max 15MB)");
+      }
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch(`${API}/api/rag/upload`, { method: "POST", body: fd });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      const res = await fetch(`${API_BASE}/api/rag/upload`, { method: "POST", body: fd });
+      const text = await res.text(); // capture server error text if not ok
+      const json = safeJson(text);
+      if (!res.ok) throw new Error(json?.error || text || `Upload failed (${res.status})`);
       setStatus(`Indexed ${json.chunks} chunks from “${json.fileName}”.`);
     } catch (err: any) {
       setStatus(err?.message || "Upload failed");
@@ -45,13 +65,15 @@ export default function Home() {
     setAnswer("");
     setSources([]);
     try {
-      const res = await fetch(`${API}/api/rag/ask`, {
+      requireApi();
+      const res = await fetch(`${API_BASE}/api/rag/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || "Ask failed");
+      const text = await res.text();
+      const json = safeJson(text);
+      if (!res.ok) throw new Error(json?.error || text || `Ask failed (${res.status})`);
       setAnswer(json.answer || "");
       setSources((json.sources || []) as SourceItem[]);
       setStatus("");
@@ -77,7 +99,6 @@ export default function Home() {
       <main className="container" style={{ maxWidth: 920, margin: "0 auto" }}>
         <h1>Welcome to FHIR CHATBOT</h1>
 
-        {/* RAG on Home */}
         <section className="card" style={{ padding: 16, marginBottom: 16 }}>
           <h2>Upload & Ask</h2>
 
@@ -119,16 +140,36 @@ export default function Home() {
           </div>
 
           {/* Answer & Sources */}
-          {answer && (
+          {!!answer && (
             <div style={{ marginTop: 14 }}>
               <h4>Answer</h4>
               <div style={{ whiteSpace: "pre-wrap" }}>{answer}</div>
+            </div>
+          )}
+
+          {!!sources.length && (
+            <div style={{ marginTop: 12 }}>
+              <h4>Sources</h4>
+              <ul style={{ paddingLeft: 18, marginTop: 6 }}>
+                {sources.map((s) => (
+                  <li key={s.marker} style={{ marginBottom: 6 }}>
+                    <strong>{s.marker}</strong>{" "}
+                    <span style={{ color: "#374151" }}>{s.fileName}</span>{" "}
+                    <em style={{ color: "#6b7280" }}>score: {s.score.toFixed(3)}</em>
+                    <div style={{ color: "#4b5563", marginTop: 2 }}>{s.preview}</div>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </section>
       </main>
     </>
   );
+}
+
+function safeJson(text: string | null) {
+  try { return text ? JSON.parse(text) : undefined; } catch { return undefined; }
 }
 
 const btn: React.CSSProperties = {
