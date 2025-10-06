@@ -49,7 +49,7 @@ router.post("/upload", upload.single("file"), async (req: Request, res: Response
     }
 
     // 2) Chunk safely (guarantees progress; avoids runaway overlap)
-    const chunks = chunkText(text, 1000, 150);
+    const chunks = chunkText(text, 350, 60);
 
     // 3) Embed in batches to keep memory stable
     const embeddings = await embedInBatches(chunks, 32);

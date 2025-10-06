@@ -97,7 +97,7 @@ export default function Home() {
     <>
       <Navbar />
       <main className="container" style={{ maxWidth: 920, margin: "0 auto" }}>
-        <h1>Welcome to FHIR CHATBOT</h1>
+        <h1>QUERY CARE</h1>
 
         <section className="card" style={{ padding: 16, marginBottom: 16 }}>
           <h2>Upload & Ask</h2>
